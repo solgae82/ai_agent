@@ -1,0 +1,8 @@
+파이썬 3.12.4 로 진행
+venv 가상화
+
+python -3.12 -m venv venv #처음 가상환경 생성(venv 디렉토리 생성 확인)
+
+venv\Scripts\activate #가상환경 실행(처음 켤때마다 해야함)
+
+deactive #가상환경 끄기
