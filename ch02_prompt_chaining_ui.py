@@ -8,7 +8,7 @@ default_prompts=[
 - 추천한 여행지가 왜 적합한지 설명해.
 - 각 여행지의 기후, 주요 관광지를 알려줘""",
 
-"""가장 ㅊ천하는 여행지 한 곳을 선정하고, 거기서 할 수 있는 활동을 제아해.
+"""가장 추천하는 여행지 한 곳을 선정하고, 거기서 할 수 있는 활동을 제안해.
 - 왜 최종 여행지로 선정했는지 설명해.
 - 해당 여행지에서 즐길 수 있는 다섯 가지 활동을 나열해.
 - 자연 탐방, 역사 탐방, 음식 체험 등 다양한 영역의 활동을 골라줘.""",
@@ -46,7 +46,7 @@ def main():
     st.set_page_config(page_title="프롬프트 체이닝 에이전트", layout="wide")
     st.title("프롬프트 체이닝 에이전트(여행 일정 수립)")
 
-    # 처음 텍스트 입력창 생성
+    # 처음 텍스트 입력창 생성 ( initial_input = value 값이 담긴다)
     initial_input = st.text_area(
         "여행 스타일 입력",
         value="""따뜻하고 날씨 좋아하고 자연 경관과 역사적인 장소를 둘러보는 걸 선호해"""
@@ -62,7 +62,7 @@ def main():
                 height=140,
                 key = f"prompt_{i}")
 
-            custom_prompts.append(edited)
+            custom_prompts.append(edited) # value값이 담긴다
 
     # 프롬프트 체이닝 실행
     if st.button("프롬프트 체인 실행"): 
@@ -73,7 +73,7 @@ def main():
 
             #결과 표시
             with final_result_tab: 
-                st.write(results[-1])
+                st.write(results[-1]) # 마지막 응답 결과 표시
 
             with details_tab: 
                 for i in range(len(custom_prompts)): 
