@@ -33,7 +33,7 @@ async def llm_call_async(prompt: str, model: str = "gpt-4o-mini") -> str:
         messages= messages
     )
 
-    print(model , "비동기 llm_calll_async 완료")
+    print(model , ":비동기 llm_calll_async 완료")
 
     return chat_completion.choices[0].message.content
 
