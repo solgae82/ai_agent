@@ -37,6 +37,15 @@ async def llm_call_async(prompt: str, model: str = "gpt-4o-mini") -> str:
 
     return chat_completion.choices[0].message.content
 
+# 웹 검색 기능을 포함한 LLM 호출 함수 선언
+async def llm_search_async(prompt: str, model: str = "gpt-4.1") -> str: 
+    response = await async_client.responses.create(
+        model = model,
+        input = prompt,
+        tools = [{"type": "web_search_preview"}]
+    )
+
+    return response.output_text
 
 # 모듈이 아닌 main으로 호출할때..
 if __name__ == "__main__": 
