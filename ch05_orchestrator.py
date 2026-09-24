@@ -5,7 +5,7 @@ from utils import llm_call
 # 오케스트레이터 프로프트 생성 함수 선언
 def get_orchestrator_prompt(user_query): 
     return f"""
-다음 사용자 질물은 분석한 뒤, 이를 3개 이내의 관련 하위 질문으로 분류해.
+다음 사용자 질문을 분석한 뒤, 이를 3개 이내의 관련 하위 질문으로 분류해.
 결과는 JSON 배열로 출력해.
 JSON 배열 안의 각 하위 질문은 다음 형식을 따르는 JSON 객체로 만들어.
 [
@@ -26,6 +26,11 @@ JSON 배열 안의 각 하위 질문은 다음 형식을 따르는 JSON 객체�
 async def run_orchestrator_workflow(user_query): 
     orchestrator_prompt = get_orchestrator_prompt(user_query)
     orchestrator_response = llm_call(orchestrator_prompt, model="gpt-4o")
+
+    print("\norchestrator_prompt:\n")
+    print(orchestrator_prompt)
+    print("\norchestrator_response:\n")
+    print(orchestrator_response)
 
     # LLM 응답 앞뒤에 붙은 ```json{}``` 마크다운 코드 블록 제거
     subtask_list = json.loads(
