@@ -35,3 +35,12 @@ main.py, utils.py 는 에이전트 맛뵈기용 소스입니다. 삭제했습니
 api 키는 os 환경변수에 설정하여 사용합니다.
 
 
+-----
+AI 에이전트 현장 용어집
+
+Orchestrator → 현장소장
+Worker → 작업자
+asyncio → LLM 인부 관리 기술
+await → “너 기다리는 동안 나 다른 데 좀 보고 올게”
+gather → “다 끝나면 한꺼번에 보고해”
+as_completed → “끝난 놈부터 보고해”

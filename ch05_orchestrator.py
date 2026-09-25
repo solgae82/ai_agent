@@ -1,6 +1,6 @@
 import asyncio
 import json
-from utils import llm_call
+from utils import llm_call ,  llm_search_async
 
 # 오케스트레이터 프로프트 생성 함수 선언
 def get_orchestrator_prompt(user_query): 
@@ -10,11 +10,11 @@ def get_orchestrator_prompt(user_query):
 JSON 배열 안의 각 하위 질문은 다음 형식을 따르는 JSON 객체로 만들어.
 [
     {{
-        "question": "하위 질문 1"
+        "question": "하위 질문 1",
         "description": "이 하위 질문의 요지와 의도에 대한 설명"
     }},
     {{
-        "question": "하위 질문 2"
+        "question": "하위 질문 2",
         "description": "이 하위 질문의 요지와 의도에 대한 설명"
     }}
 ]
@@ -22,20 +22,36 @@ JSON 배열 안의 각 하위 질문은 다음 형식을 따르는 JSON 객체�
 사용자 질문: {user_query}
 """
 
+# 워커 프롬프트 생성 함수 선언
+def get_worker_prompt(user_query, question, description): 
+    return f"""
+다음 사용자 질문에서 파생된 하위 질문을 보고 응답해.
+사용자 질문: {user_query}
+하위 질문: {question}
+하위 질문의 의도: {description}
+하위 질문을 철저히 분석해. 그에 대해 포괄적이고 상세하게 응답해.
+웹 검색 도구를 이용해 자료 조사를 하고, 이를 반영해 응답해.
+"""
+
+# 여러 LLM 요청 병렬 실행 함수 선언
+async def run_llm_parallel(prompt_details): 
+    tasks =[llm_search_async(item['user_prompt'], item['model']) for item in prompt_details]
+    responses = await asyncio.gather(*tasks)
+    return responses
+
 # 오케스트레이터-워커 워크플로로 실행 함수 선언
 async def run_orchestrator_workflow(user_query): 
     orchestrator_prompt = get_orchestrator_prompt(user_query)
     orchestrator_response = llm_call(orchestrator_prompt, model="gpt-4o")
 
-    print("\norchestrator_prompt:\n")
-    print(orchestrator_prompt)
-    print("\norchestrator_response:\n")
-    print(orchestrator_response)
 
-    # LLM 응답 앞뒤에 붙은 ```json{}``` 마크다운 코드 블록 제거
+    # LLM 응답 앞뒤에 붙은 ```json{}``` 마크다운 코드 블록 제거, json 문자열 파싱해서 list 객체 만들기 
     subtask_list = json.loads(
         orchestrator_response.replace("```json","").replace("```","")
     )
+
+    #print(type(subtask_list)) # <class 'list'>
+    #print(subtask_list) # 리스트 [{'question':'..','description':'..'}..]
 
     # 하위 질문 출력
     for i, subtask in enumerate(subtask_list, start=1): 
@@ -43,9 +59,29 @@ async def run_orchestrator_workflow(user_query):
         print("질문:",subtask['question'])
         print("설명:",subtask['description'])
 
+    # 워커 작업 목록 생성
+    worker_prompt_details = [
+        {
+            "user_prompt": get_worker_prompt(user_query, subtask["question"], subtask["description"]),
+            "model": "gpt-4.1"
+        }
+        for subtask in subtask_list
+    ]
+
+    # 첫번째 워커 프롬프트 테스트 출력
+    print("\n============== 샘플 워크 프롬프트 ==============")
+    print(worker_prompt_details[0]["user_prompt"])
+
+    # 워커 병렬 실행 후 응답 출력
+    worker_responses = await run_llm_parallel(worker_prompt_details)
+
+    print("\n============== 워커 응답 결과 ==============")
+    for i, response in enumerate(worker_responses, 1): 
+        print(f"\n--- 하위 질문 {i} 응답 ---")
+        print(response)
 
 async def main(): 
-    user_query = "2026sus AI 서비스는 어떻게 발전했을까?"
+    user_query = "2026년 AI 서비스는 어떻게 발전했을까?"
     final_output = await run_orchestrator_workflow(user_query)
 
 
