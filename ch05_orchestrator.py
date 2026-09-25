@@ -80,6 +80,26 @@ async def run_orchestrator_workflow(user_query):
         print(f"\n--- 하위 질문 {i} 응답 ---")
         print(response)
 
+    # 최종 aggregator 프롬프트 생성
+    aggregator_prompt =(
+        "다음은 사용자 질문을 하위 질문으로 나누고 받은 응답이야.\n"
+        "이 내용을 모두 종합해 최종 답변을 해.\n"
+        "하위 질문의 응답을 최대한 포괄적이고 상세하게 포함해.\n"
+        f"사용자 질문: {user_query}\n\n"
+        "하위 질문 및 응답:\n"
+    )
+
+    for i, task in enumerate(subtask_list): 
+        aggregator_prompt += f"\n{i+1}. 하위질문: {task['question']}\n"
+        aggregator_prompt += f"\n    응답: {worker_responses[i]}\n"
+
+    print("\n============== aggregator 프롬프트 ==============\n" , aggregator_prompt)
+
+    final_response = llm_call(aggregator_prompt, model="gpt-4.1")
+
+    print("\n============== 최종 보고서 결과 ==============\n")
+    print(final_response)
+
 async def main(): 
     user_query = "2026년 AI 서비스는 어떻게 발전했을까?"
     final_output = await run_orchestrator_workflow(user_query)
